@@ -30,6 +30,9 @@ This is a DB web client empowers users to seamlessly connect to relational datab
 </p>
 
 ## 📦 Installation
+
+### You can grab your executable from the [releases](https://github.com/Yazeed1s/sqlweb/releases) page
+
 ### Using the install script (mac/linux)
 ```bash
 curl -s https://raw.githubusercontent.com/Yazeed1s/sqlweb/master/install.sh | sudo bash
