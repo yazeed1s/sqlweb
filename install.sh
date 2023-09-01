@@ -44,7 +44,7 @@ mkdir _temp
 unzip ${os}-${arch}.zip -d _temp/ || exit_with_error "Failed to unzip binary"
 
 echo "Moving binary to ${bin_dir}..."
-mv _temp/bin/${os}-${arch}/${executable} ${bin_dir} || exit_with_error "Failed to move binary"
+mv _temp/${os}-${arch}/${executable} ${bin_dir} || exit_with_error "Failed to move binary"
 
 echo "Cleaning up..."
 rm -rf "${os}-${arch}.zip" _temp || exit_with_error "Failed to clean up"
