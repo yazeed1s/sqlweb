@@ -1,7 +1,7 @@
 # sqlweb
 
 ## About The Tool
-This is a DB web client empowers users to seamlessly connect to relational databases via a user-friendly web interface. It offers a comprehensive set of features designed to enhance your database management experience.
+This is a DB web client that enables users to seamlessly connect to relational databases via a user-friendly web interface. It offers a comprehensive set of features designed to enhance your database management experience.
 
 ## ✨ Features
 - Connect to relational databases, whether hosted locally or remotely.
