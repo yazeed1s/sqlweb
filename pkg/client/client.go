@@ -1,3 +1,18 @@
+// Package client provides a versatile client for interacting with various database types,
+// abstracting away the complexities of database connections and queries. It simplifies the
+// process of working with different database types, such as MySQL and PostgreSQL.
+//
+// The central component of this package is the `Client` type, which represents an active
+// database client connected to a specific database. It includes essential connection details
+// like host, port, username, password, database name, database type (e.g., MySQL or PostgreSQL),
+// and schema information.
+//
+// The package also includes various methods for fetching schema names, schema sizes, table names,
+// column details, table data, and more. These methods are designed to work seamlessly with different
+// database types, providing a consistent and convenient API for database interactions.
+//
+// Note that this package assumes an already established database connection, and it focuses on
+// simplifying data retrieval and schema exploration tasks.
 package client
 
 import (
@@ -12,7 +27,7 @@ import (
 	"strings"
 	"time"
 
-	_sql "sqlweb/db/sql"
+	_sql "github.com/yazeed1s/sqlweb/db/sql"
 )
 
 // Client represent the active client connected to the db
@@ -38,7 +53,7 @@ type Schema struct {
 // Row represents a row within the table, inclusive of its related columns
 type Row map[string]interface{}
 
-// Represents a table along with its name, data rows, columns, number of columns, number of rows,
+// Table Represents a table along with its name, data rows, columns, number of columns, number of rows,
 // and size in megabytes
 type Table struct {
 	Name      string   `json:"table_name"`

@@ -3,7 +3,7 @@ package connection
 import (
 	"database/sql"
 	"encoding/json"
-	_sql "sqlweb/db/sql"
+	_sql "github.com/yazeed1s/sqlweb/db/sql"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"

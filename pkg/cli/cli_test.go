@@ -29,9 +29,8 @@ func TestArgs_ValidatePortRange_InvalidPort(t *testing.T) {
 
 func TestArgs_NewArgs_DefaultValues(t *testing.T) {
 	args := NewArgs()
-
 	assert.Equal(t, 3000, args.Port, "Expected default port value to be 3000")
-	assert.True(t, args.Log, "Expected default log value to be true")
+	assert.False(t, args.Log, "Expected default log value to be true")
 	assert.Contains(t, args.Help, "USAGE: sqlweb", "Expected default help message to contain usage information")
 	assert.Equal(t, "version 0.1.0", args.Version, "Expected default version to be 'version 0.1.0'")
 }

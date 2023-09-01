@@ -1,14 +1,18 @@
+// Package sql defines a series of SQL queries and SQL-related constants for interacting with databases,
+// particularly MySQL and PostgreSQL. The code is organized into sections for MySQL and PostgreSQL,
+// with each section containing relevant SQL queries and related constants.
 package sql
 
 const (
+	/*------------------------
+	 === Common Constants ===
+	--------------------------*/
 	SQLSelectAll string = `SELECT * FROM %s.%s`
 	SQLUpdateRow string = `UPDATE %s SET %s = %s WHERE %s = %s`
-	/*
-		-------------
-		=== MySQL ===
-		-------------
-	*/
-	// TODO: find postgreSQL's equivilant to mysql's `show create table ..`
+
+	/*------------------------
+	 === MySQL Constants ===
+	--------------------------*/
 	MySQLShowCreateTable   string = `SHOW CREATE TABLE %s.%s`
 	MySQLGetColumnDataType        = `
 		SELECT 
@@ -89,11 +93,10 @@ const (
 		WHERE
 			TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s';
 	`
-	/*
-		------------------
-		=== PostgreSQL ===
-		------------------
-	*/
+
+	/*---------------------------
+	 === PostgreSQL Constants ===
+	-----------------------------*/
 	PostgreSQLShowDatabases string = `
 		SELECT
 			datname

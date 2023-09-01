@@ -1,3 +1,16 @@
+// Package handler provides HTTP request handlers for interacting with SQL databases
+// and managing database connections, queries, and operations.
+//
+// It includes various functionalities for:
+//   - Establishing and managing database connections.
+//   - Executing SQL queries and handling query results.
+//   - Retrieving database schema information.
+//   - Performing database operations such as dropping tables, truncating tables,
+//     dropping databases, and creating databases.
+//   - Exporting table data to JSON and CSV formats.
+//   - Handling HTTP request/response for database-related tasks.
+//
+// This package is designed to work with SQL databases through a RESTful API
 package handler
 
 import (
@@ -12,19 +25,18 @@ import (
 	"strconv"
 	"strings"
 
-	_conn "sqlweb/db/connection"
-	_type "sqlweb/db/sql"
-	_cl "sqlweb/pkg/client"
-	_conf "sqlweb/pkg/config"
-	"sqlweb/pkg/query"
+	"github.com/yazeed1s/sqlweb/db/connection"
+	_sql "github.com/yazeed1s/sqlweb/db/sql"
+	_client "github.com/yazeed1s/sqlweb/pkg/client"
+	"github.com/yazeed1s/sqlweb/pkg/config"
+	"github.com/yazeed1s/sqlweb/pkg/query"
 )
 
-// var tableNames []string
-
 type Handler struct {
-	client *_cl.Client
+	client *_client.Client
 }
 
+// Response represents a standard response structure for API responses.
 type Response struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data,omitempty"`
@@ -33,7 +45,7 @@ type Response struct {
 
 func NewHandler() *Handler {
 	return &Handler{
-		client: &_cl.Client{},
+		client: &_client.Client{},
 	}
 }
 
@@ -41,6 +53,7 @@ func (h *Handler) GetDB() *sql.DB {
 	return h.client.Database
 }
 
+// jsonResponse sends a JSON response with the specified HTTP status code.
 func jsonResponse(writer http.ResponseWriter, status int, data interface{}) {
 	writer.WriteHeader(status)
 	err := json.NewEncoder(writer).Encode(data)
@@ -49,6 +62,7 @@ func jsonResponse(writer http.ResponseWriter, status int, data interface{}) {
 	}
 }
 
+// handleBadRequest sends a JSON response for a bad request.
 func handleBadRequest(writer http.ResponseWriter, message string, e error) {
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusBadRequest)
@@ -71,6 +85,7 @@ func handleBadRequest(writer http.ResponseWriter, message string, e error) {
 	}
 }
 
+// handleSuccessRequest sends a JSON response for a successful request.
 func handleSuccessRequest(writer http.ResponseWriter, message string, data ...interface{}) {
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
@@ -107,6 +122,7 @@ func handleSuccessRequest(writer http.ResponseWriter, message string, data ...in
 	}
 }
 
+// createSuccessResponse creates a standard success response structure.
 func createSuccessResponse(message string, objects ...interface{}) Response {
 	response := Response{
 		Message: message,
@@ -124,6 +140,7 @@ func createSuccessResponse(message string, objects ...interface{}) Response {
 	return response
 }
 
+// mergeMaps merges multiple maps into a single map.
 func mergeMaps(maps ...interface{}) map[string]interface{} {
 	data := make(map[string]interface{})
 	for _, m := range maps {
@@ -136,11 +153,12 @@ func mergeMaps(maps ...interface{}) map[string]interface{} {
 	return data
 }
 
-func parseConnectionRequest(request *http.Request) (*_conn.Connection, error) {
+// parseConnectionRequest parses a JSON request body into a Connection object.
+func parseConnectionRequest(request *http.Request) (*connection.Connection, error) {
 	var (
 		body       []byte
 		err        error
-		conn       _conn.Connection
+		conn       connection.Connection
 		bodyReader *bytes.Reader
 		decoder    *json.Decoder
 	)
@@ -166,8 +184,9 @@ func parseConnectionRequest(request *http.Request) (*_conn.Connection, error) {
 	return &conn, nil
 }
 
-func createClient(conn *_conn.Connection) *_cl.Client {
-	return &_cl.Client{
+// createClient creates a database client from a Connection object.
+func createClient(conn *connection.Connection) *_client.Client {
+	return &_client.Client{
 		Host:     conn.Host,
 		Port:     conn.Port,
 		User:     conn.User,
@@ -177,16 +196,18 @@ func createClient(conn *_conn.Connection) *_cl.Client {
 	}
 }
 
-func setSchemaName(client *_cl.Client) {
-	if strings.ToLower(client.Type.String()) == strings.ToLower(_type.MySQL.String()) {
+// setSchemaName sets the schema name for the client based on the database type.
+func setSchemaName(client *_client.Client) {
+	if strings.ToLower(client.Type.String()) == strings.ToLower(_sql.MySQL.String()) {
 		client.Schema.Name = client.Name
-	} else if strings.ToLower(client.Type.String()) == strings.ToLower(_type.PostgreSQL.String()) {
+	} else if strings.ToLower(client.Type.String()) == strings.ToLower(_sql.PostgreSQL.String()) {
 		client.Schema.Name = "public"
 	}
 }
 
-func getColumnsDataForTables(client *_cl.Client, tableNames []string) ([]_cl.ColumnData, error) {
-	columnsData := make([]_cl.ColumnData, 0)
+// getColumnsDataForTables retrieves column data for a list of tables.
+func getColumnsDataForTables(client *_client.Client, tableNames []string) ([]_client.ColumnData, error) {
+	columnsData := make([]_client.ColumnData, 0)
 	for _, tableName := range tableNames {
 		columns, err := client.GetColumnsData(tableName)
 		if err != nil {
@@ -198,6 +219,7 @@ func getColumnsDataForTables(client *_cl.Client, tableNames []string) ([]_cl.Col
 	return columnsData, nil
 }
 
+// checkURLParams checks the number of URL parameters against an expected count.
 func checkURLParams(u *url.URL, expectedCount int) error {
 	var (
 		err       error
@@ -252,8 +274,8 @@ func (h *Handler) SaveConnection() http.HandlerFunc {
 			return
 		}
 
-		savedClient := _conf.NewConnectionConfig(conn.Name, conn)
-		b, err := _conf.WriteToFile(savedClient)
+		savedClient := config.NewConnectionConfig(conn.Name, conn)
+		b, err := config.WriteToFile(savedClient)
 		if err != nil {
 			handleBadRequest(writer, "Error writing connection info to file", err)
 			return
@@ -279,11 +301,11 @@ func (h *Handler) SavedConnectionsHandler() http.HandlerFunc {
 		}(request.Body)
 
 		var (
-			connections []_conn.Connection
+			connections []connection.Connection
 			err         error
 		)
 
-		connections, err = _conf.GetSavedConnections()
+		connections, err = config.GetSavedConnections()
 		if err != nil {
 			handleBadRequest(writer, "Error retrieving saved connections: ", err)
 			return
@@ -303,15 +325,15 @@ func (h *Handler) ConnectHandler() http.HandlerFunc {
 		}(request.Body)
 
 		var (
-			conn        *_conn.Connection
-			client      *_cl.Client
+			conn        *connection.Connection
+			client      *_client.Client
 			db          *sql.DB
 			data        map[string]interface{}
 			err         error
 			msg         string
 			tableNames  []string
 			schema      string
-			columnsData []_cl.ColumnData
+			columnsData []_client.ColumnData
 		)
 
 		conn, err = parseConnectionRequest(request)
@@ -323,7 +345,7 @@ func (h *Handler) ConnectHandler() http.HandlerFunc {
 
 		client = createClient(conn)
 		h.client = client
-		db, err = _conn.ConnectToDatabase(conn, conn.Type.String())
+		db, err = connection.ConnectToDatabase(conn, conn.Type.String())
 		if err != nil {
 			handleBadRequest(writer, "Failed to connect to the database", err)
 			return
@@ -348,8 +370,8 @@ func (h *Handler) ConnectHandler() http.HandlerFunc {
 
 		h.client.Schema.NumTables = len(tableNames)
 		msg = fmt.Sprintf("Successfully connected to %s", h.client.Name)
-		// for PostgreSQL, avoid sending 'public' as schema name to the frontend 
-		if strings.EqualFold(h.client.Type.String(), _type.PostgreSQL.String()) {
+		// for PostgreSQL, avoid sending 'public' as schema name to the frontend
+		if strings.EqualFold(h.client.Type.String(), _sql.PostgreSQL.String()) {
 			schema = h.client.Name
 		} else {
 			schema = h.client.Schema.Name
@@ -369,7 +391,7 @@ func (h *Handler) DbDisconnect() http.HandlerFunc {
 			}
 		}(request.Body)
 
-		err := _conn.Disconnect(h.client.Database)
+		err := connection.Disconnect(h.client.Database)
 		if err != nil {
 			handleBadRequest(writer, "Failed to disconnect from database", err)
 			return
@@ -518,7 +540,7 @@ func (h *Handler) GetColumnData() http.HandlerFunc {
 
 		var (
 			err       error
-			cols      _cl.ColumnData
+			cols      _client.ColumnData
 			msg       string
 			tableName string
 		)
@@ -576,7 +598,7 @@ func (h *Handler) TableDataHandler() http.HandlerFunc {
 
 		var (
 			err        error
-			tableData  *_cl.Table
+			tableData  *_client.Table
 			res        map[string]interface{}
 			msg        string
 			tableName  string
@@ -646,7 +668,7 @@ func (h *Handler) TableSizeHandler() http.HandlerFunc {
 
 		var (
 			err          error
-			tableSize    _cl.TableSize
+			tableSize    _client.TableSize
 			responseData map[string]interface{}
 			tableName    string
 		)
@@ -690,7 +712,7 @@ func (h *Handler) TableSizesHandler() http.HandlerFunc {
 
 		var (
 			err       error
-			tableSize []_cl.TableSize
+			tableSize []_client.TableSize
 			res       map[string]interface{}
 		)
 

@@ -4,17 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 
 	_ "github.com/lib/pq"
-	_sql "sqlweb/db/sql"
+	_sql "github.com/yazeed1s/sqlweb/db/sql"
 )
 
-// var connectionPools map[string]*sqlx.DB
-
-// const defaultPostgresSqlSchema string = "public" //don't yell, this is just for now
-
+// Connection represents a database connection info.
 type Connection struct {
 	Host     string      `json:"host"`
 	Port     int         `json:"port"`
@@ -24,6 +20,7 @@ type Connection struct {
 	Type     _sql.DbType `json:"databaseType"`
 }
 
+// UnmarshalJSON customizes the JSON unmarshaling for the Connection type.
 func (c *Connection) UnmarshalJSON(data []byte) error {
 	type clientAlias Connection
 	aux := &struct {
@@ -37,6 +34,7 @@ func (c *Connection) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// MarshalJSON customizes the JSON marshaling for the Connection type.
 func (c *Connection) MarshalJSON() ([]byte, error) {
 	type clientAlias Connection
 	aux := &struct {
@@ -47,6 +45,7 @@ func (c *Connection) MarshalJSON() ([]byte, error) {
 	return json.Marshal(aux)
 }
 
+// parseDbType converts a string representation of a database type to a DbType constant.
 func parseDbType(dbType string) _sql.DbType {
 	switch strings.ToLower(dbType) {
 	case "mysql":
@@ -59,16 +58,8 @@ func parseDbType(dbType string) _sql.DbType {
 		return _sql.Unsupported
 	}
 }
-func (c *Connection) optionalDBurl() string {
-	return fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/",
-		c.User,
-		c.Password,
-		c.Host,
-		c.Port,
-	)
-}
 
+// mySqlUrl generates a MySQL-specific database connection URL.
 func (c *Connection) mySqlUrl() string {
 	return fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s",
@@ -80,6 +71,7 @@ func (c *Connection) mySqlUrl() string {
 	)
 }
 
+// postgresUrl generates a PostgreSQL-specific database connection URL.
 func (c *Connection) postgresUrl() string {
 	return fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
@@ -91,10 +83,8 @@ func (c *Connection) postgresUrl() string {
 	)
 }
 
+// ConnectToDatabase connects to a database using the provided Connection info and database type.
 func ConnectToDatabase(c *Connection, dbType string) (*sql.DB, error) {
-	log.Println("here: ", dbType)
-	log.Println(c)
-	log.Println(c.mySqlUrl())
 	if len(dbType) == 0 {
 		return nil, fmt.Errorf("database type cannot be empty")
 	}
@@ -126,41 +116,13 @@ func ConnectToDatabase(c *Connection, dbType string) (*sql.DB, error) {
 	return db, nil
 }
 
+// testQuery executes a test SQL query on the database to check the connection.
 func testQuery(db *sql.DB) error {
 	_, err := db.Exec("SELECT 1")
 	return err
 }
 
-func OptionalConnectToDatabase(config *Connection, dbType string) (*sql.DB, error) {
-	log.Println(dbType)
-	switch strings.ToLower(dbType) {
-	case strings.ToLower(_sql.MySQL.String()):
-		db, err := sql.Open("mysql",
-			fmt.Sprintf(
-				"%s:%s@tcp(%s:%d)/",
-				config.User,
-				config.Password,
-				config.Host,
-				config.Port,
-			),
-		)
-		if err != nil {
-			return nil, err
-		}
-		if err = db.Ping(); err != nil {
-			err := db.Close()
-			if err != nil {
-				return nil, err
-			}
-			return nil, err
-		}
-		return db, nil
-
-	default:
-		return nil, fmt.Errorf("unsupported database type: %s", dbType)
-	}
-}
-
+// Disconnect closes the database connection.
 func Disconnect(db *sql.DB) error {
 	return db.Close()
 }

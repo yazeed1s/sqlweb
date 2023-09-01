@@ -9,12 +9,15 @@ import (
 	"os"
 	"path/filepath"
 
-	_con "sqlweb/db/connection"
+	"github.com/yazeed1s/sqlweb/db/connection"
 )
 
+// ConnectionHistory represents an object for storing connection information in a file.
+// The 'Schema' field holds the schema name, which serves as the key for retrieving objects from the file later.
+// The 'Connection' field contains the actual connection data.
 type ConnectionHistory struct {
-	Schema     string          `json:"key"`
-	Connection _con.Connection `json:"connection"`
+	Schema     string                `json:"key"`
+	Connection connection.Connection `json:"connection"`
 }
 
 const (
@@ -23,26 +26,31 @@ const (
 	configFileName = "connection_history.json"
 )
 
-func NewConnectionConfig(key string, connection *_con.Connection) *ConnectionHistory {
+// NewConnectionConfig creates a new ConnectionHistory object with the provided key and connection data.
+func NewConnectionConfig(key string, connection *connection.Connection) *ConnectionHistory {
 	return &ConnectionHistory{
 		Schema:     key,
 		Connection: *connection,
 	}
 }
 
-// WriteToFile
-// os.UserHomeDir():
-// - On Unix, including macOS, it returns the $HOME environment variable
-// - On Windows, it returns %USERPROFILE%
-// - On Plan 9, it returns the $home environment variable
-// os.UserConfigDir():
-//   - On Unix systems, it returns $XDG_CONFIG_HOME as specified by
-//     https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
-//     if non-empty, else $HOME/.config.
-//   - On Darwin, it returns $HOME/Library/Application Support
-//   - On Windows, it returns %AppData%
-//   - On Plan 9, it returns $home/lib.
+// WriteToFile appends a ConnectionHistory object to a JSON file for persistent storage,
+// ensuring that the file maintains an array of JSON objects.
+//
+// If the file doesn't exist, it creates the file and initializes it with a JSON array containing the provided object.
+// If the file already exists, it appends the JSON object to the existing array.
 func WriteToFile(conf *ConnectionHistory) (int, error) {
+	// os.UserHomeDir():
+	// - On Unix, including macOS, it returns the $HOME environment variable
+	// - On Windows, it returns %USERPROFILE%
+	// - On Plan 9, it returns the $home environment variable
+	// os.UserConfigDir():
+	//   - On Unix systems, it returns $XDG_CONFIG_HOME as specified by
+	//     https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+	//     if non-empty, else $HOME/.config.
+	//   - On Darwin, it returns $HOME/Library/Application Support
+	//   - On Windows, it returns %AppData%
+	//   - On Plan 9, it returns $home/lib.
 	var (
 		err        error
 		file       *os.File
@@ -75,6 +83,7 @@ func WriteToFile(conf *ConnectionHistory) (int, error) {
 		if err != nil {
 			return 0, err
 		}
+		// Insert the JSON object between [ ] to represent a JSON array of objects.
 		bits, err = file.WriteString("[\n" + string(data) + "\n]")
 		if err != nil {
 			return 0, err
@@ -86,10 +95,14 @@ func WriteToFile(conf *ConnectionHistory) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
+	// Move the file pointer to the end, just before the closing square bracket.
 	_, err = file.Seek(-2, io.SeekEnd)
 	if err != nil {
 		return 0, err
 	}
+
+	// Append the new ConnectionHistory object to the existing file.
 	bits, err = file.WriteString("\n," + string(data) + "\n]")
 	if err != nil {
 		return 0, err
@@ -105,7 +118,8 @@ func WriteToFile(conf *ConnectionHistory) (int, error) {
 	return bits, nil
 }
 
-func ReadFromFile(key string) (_con.Connection, error) {
+// ReadFromFile reads a ConnectionHistory object from the configuration file based on the provided key.
+func ReadFromFile(key string) (connection.Connection, error) {
 	var (
 		err          error
 		file         *os.File
@@ -117,7 +131,7 @@ func ReadFromFile(key string) (_con.Connection, error) {
 	fullFilePath = filepath.Join(configDir, appDirName, configFileName)
 	file, err = os.Open(fullFilePath)
 	if err != nil {
-		return _con.Connection{}, err
+		return connection.Connection{}, err
 	}
 
 	defer func(file *os.File) {
@@ -129,22 +143,23 @@ func ReadFromFile(key string) (_con.Connection, error) {
 
 	bytes, err = io.ReadAll(file)
 	if err != nil {
-		return _con.Connection{}, err
+		return connection.Connection{}, err
 	}
 	var connections []ConnectionHistory
 	err = json.Unmarshal(bytes, &connections)
 	if err != nil {
-		return _con.Connection{}, err
+		return connection.Connection{}, err
 	}
 	for _, conn := range connections {
 		if conn.Schema == key {
 			return conn.Connection, nil
 		}
 	}
-	return _con.Connection{}, fmt.Errorf("connection not found for key: %s", key)
+	return connection.Connection{}, fmt.Errorf("connection not found for key: %s", key)
 }
 
-func GetSavedConnections() ([]_con.Connection, error) {
+// GetSavedConnections retrieves all saved connection configurations from the configuration file.
+func GetSavedConnections() ([]connection.Connection, error) {
 	var (
 		err              error
 		file             *os.File
@@ -152,7 +167,7 @@ func GetSavedConnections() ([]_con.Connection, error) {
 		bytes            []byte
 		configDir        string
 		connections      []ConnectionHistory
-		savedConnections []_con.Connection
+		savedConnections []connection.Connection
 	)
 	configDir, err = os.UserConfigDir()
 	if err != nil {

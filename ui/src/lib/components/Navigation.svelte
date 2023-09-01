@@ -1,11 +1,6 @@
 <script lang="ts">
 	import {
-		faChartArea,
-		faChartBar,
-		faChartColumn,
-		faChartSimple,
 		faCode,
-		faCog,
 		faDatabase
 	} from '@fortawesome/free-solid-svg-icons';
 	import { goto } from '$app/navigation';

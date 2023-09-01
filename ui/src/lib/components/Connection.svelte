@@ -34,7 +34,7 @@
 	const sendRequest = async (): Promise<void> => {
 		form.port = parseInt(form.port, 10);
 		form.databaseType = form.databaseType.toLocaleLowerCase();
-		const res = await fetch('http://localhost:3000/connect', {
+		const res = await fetch('/connect', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(form)
@@ -45,7 +45,7 @@
 
 	const sendSaveRequest = async (): Promise<void> => {
 		form.port = parseInt(form.port, 10);
-		const res = await fetch('http://localhost:3000/save', {
+		const res = await fetch('/save', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(form)
@@ -56,7 +56,7 @@
 
 	const sendSavedConnectionRequest = async (): Promise<void> => {
 		form.port = parseInt(form.port, 10);
-		const res = await fetch('http://localhost:3000/saved/connections', {
+		const res = await fetch('/saved/connections', {
 			method: 'GET',
 			headers: { 'Content-Type': 'application/json' }
 		});

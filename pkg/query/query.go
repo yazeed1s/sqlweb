@@ -1,3 +1,12 @@
+// Package query provides a set of functions for interacting with SQL databases,
+// including executing queries, updating rows, and performing various database operations.
+//
+// This package includes functionalities for:
+//   - Executing SQL queries.
+//   - Updating rows in database tables.
+//   - Retrieving and handling column data types.
+//   - Wrapping values and primary keys for SQL update statements.
+//   - Performing database operations such as dropping tables, truncating tables, dropping databases, and creating databases.
 package query
 
 import (
@@ -8,14 +17,16 @@ import (
 	"strings"
 	"time"
 
-	_sql "sqlweb/db/sql"
-	_cl "sqlweb/pkg/client"
+	_sql "github.com/yazeed1s/sqlweb/db/sql"
+	_client "github.com/yazeed1s/sqlweb/pkg/client"
 )
 
+// Query represents a SQL query
 type Query struct {
 	SQLQuery string `json:"query"`
 }
 
+// Result represents the result of a database operation.
 type Result struct {
 	AffectedRows int64                    `json:"affected_rows"`
 	Time         string                   `json:"time_taken"`
@@ -92,7 +103,7 @@ func wrapPrimaryKey(dataType, priKey string) string {
 // UpdateRow constructs and executes an SQL UPDATE statement to modify a row in the specified table.
 // The function handles checking the column data type, and wraps its value in single quotes if necessary.
 // Returns the result of the update operation or any encountered errors.
-func UpdateRow(table, parentCol, newVal, priKeyVal, priKeyCol string, client *_cl.Client) (*Result, error) {
+func UpdateRow(table, parentCol, newVal, priKeyVal, priKeyCol string, client *_client.Client) (*Result, error) {
 	if err := checkDatabaseConnection(client.Database); err != nil {
 		return nil, err
 	}
@@ -154,7 +165,7 @@ func UpdateRow(table, parentCol, newVal, priKeyVal, priKeyCol string, client *_c
 	return result, nil
 }
 
-func ExecuteQuery(q *Query, client *_cl.Client) (*Result, error) {
+func ExecuteQuery(q *Query, client *_client.Client) (*Result, error) {
 	if err := checkDatabaseConnection(client.Database); err != nil {
 		return nil, err
 	}

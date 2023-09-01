@@ -28,6 +28,7 @@ func StartProfiling() {
 	p.startGoroutineProfiling()
 	p.startBlockProfiling()
 }
+
 func (p Profiler) startCPUProfiling() {
 	f, err := os.Create(p.cpuProfileFile)
 	if err != nil {

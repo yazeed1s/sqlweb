@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 
-	_h "sqlweb/pkg/handler"
+	_h "github.com/yazeed1s/sqlweb/pkg/handler"
 )
 
 func handleMethod(method string, handler http.HandlerFunc) http.HandlerFunc {

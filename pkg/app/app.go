@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"os"
 
-	"sqlweb/pkg/cli"
-	"sqlweb/pkg/handler"
-	_http "sqlweb/pkg/http"
-	_static "sqlweb/static"
+	"github.com/yazeed1s/sqlweb/pkg/cli"
+	"github.com/yazeed1s/sqlweb/pkg/handler"
+	_http "github.com/yazeed1s/sqlweb/pkg/http"
+	_static "github.com/yazeed1s/sqlweb/static"
 )
 
 type App struct {
@@ -59,8 +59,10 @@ func (app *App) SetupRouter() {
 }
 
 func (app *App) StartServer() {
-	serveMux := _http.CorsMiddleware(app.Router)
+	// Uncomment this line to enable CORS middleware if needed
+	// serveMux := _http.CorsMiddleware(app.Router)
 	log.Print("Listening...", app.Args.Port)
-	// log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", app.Args.Port), app.Router))
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", app.Args.Port), serveMux))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", app.Args.Port), app.Router))
+	// Uncomment this line to use CORS middleware with the HTTP server
+	// log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", app.Args.Port), serveMux))
 }

@@ -81,7 +81,7 @@
 	});
 
 	const editRowRequest = async (values: RowValues): Promise<void> => {
-		const res = await fetch('http://localhost:3000/update', {
+		const res = await fetch('/update', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(values)
@@ -93,8 +93,8 @@
 	const exportRequest = async (choice: string): Promise<void> => {
 		let url =
 			choice === 'sql'
-				? `http://localhost:3000/${choice}/export`
-				: `http://localhost:3000/${choice}/export?name=${encodeURIComponent(
+				? `/${choice}/export`
+				: `/${choice}/export?name=${encodeURIComponent(
 						selectTableName.selectedTable
 				  )}`;
 
@@ -116,18 +116,14 @@
 	};
 
 	const downloadFile = (blob: Blob, file: string | null): void => {
-		// Create a URL for the blob
 		const uurl = window.URL.createObjectURL(blob);
-		// Create a temporary anchor element to trigger the download
 		const a = document.createElement('a');
 		a.href = uurl;
 		console.log(file);
 		if (file) a.download = file;
 		a.style.display = 'none';
 		document.body.appendChild(a);
-		// Click the anchor element to trigger the download
 		a.click();
-		// Clean up
 		window.URL.revokeObjectURL(uurl);
 		document.body.removeChild(a);
 	};
@@ -136,7 +132,7 @@
 		header = [];
 		rows = [];
 		cols = [];
-		let url = `http://localhost:3000/table?name=${encodeURIComponent(
+		let url = `/table?name=${encodeURIComponent(
 			selectTableName.selectedTable
 		)}&page=${currentPage}&perPage=${rowsPerPage}`;
 		try {

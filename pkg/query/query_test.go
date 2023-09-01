@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	_conn "sqlweb/db/connection"
-	_sql "sqlweb/db/sql"
-	_cl "sqlweb/pkg/client"
+	_conn "github.com/yazeed1s/sqlweb/db/connection"
+	_sql "github.com/yazeed1s/sqlweb/db/sql"
+	_cl "github.com/yazeed1s/sqlweb/pkg/client"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
@@ -65,7 +65,7 @@ func TestDropTable(t *testing.T) {
 	result, err := DropTable(addedTable, client.Name, client.Database)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, 0, result.AffectedRows, "Expected affected rows to be 0")
+	assert.Equal(t, int64(0), result.AffectedRows, "Expected affected rows to be 0")
 	assert.Contains(t, result.Msg, "dropped successfully")
 
 	// Verify that the table no longer exists
@@ -115,7 +115,7 @@ func TestTruncateTable(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 
-	// // Verify that the table is empty
+	// Verify that the table is empty
 	emptyQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s", addedTable)
 	var count int
 	err = client.Database.QueryRow(emptyQuery).Scan(&count)
@@ -125,7 +125,7 @@ func TestTruncateTable(t *testing.T) {
 	result, err = DropTable(addedTable, client.Name, client.Database)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, 0, result.AffectedRows, "Expected affected rows to be 0")
+	assert.Equal(t, int64(0), result.AffectedRows, "Expected affected rows to be 0")
 	assert.Contains(t, result.Msg, "dropped successfully")
 	// Verify that the table no longer exists
 	tables, err := client.GetTableNames()

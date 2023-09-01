@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	_conn "sqlweb/db/connection"
-	_sql "sqlweb/db/sql"
+	_conn "github.com/yazeed1s/sqlweb/db/connection"
+	_sql "github.com/yazeed1s/sqlweb/db/sql"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"

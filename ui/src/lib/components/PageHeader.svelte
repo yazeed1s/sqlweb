@@ -69,11 +69,11 @@
 	};
 
 	const disconnect = async (): Promise<void> => {
-		await fetchAndHandleResponse('http://localhost:3000/disconnect', 'POST');
+		await fetchAndHandleResponse('/disconnect', 'POST');
 	};
 
 	const showSchemas = async (): Promise<void> => {
-		const json = await fetchAndHandleResponse('http://localhost:3000/schemas', 'GET');
+		const json = await fetchAndHandleResponse('/schemas', 'GET');
 		schemas = json.schemas;
 		console.log(schemas);
 	};
