@@ -10,7 +10,6 @@ This is a DB web client that enables users to seamlessly connect to relational d
 - Generate raw SQL for database schema objects.
 - Editable table cells
 - Save connection info locally
-- Data visualization
 - Relatively small and efficient executable < 15MB
 - Memory usage < 25MB
 - Rely on minimal external dependencies, mostly utilizing the standard library.
@@ -65,7 +64,8 @@ cd .. && make build
 sudo make install
 ```
 
-TODO: brew, yay, windows
+### for windows users, you can download the executable from the releases page.
+TODO: brew, yay
 
 ## 🚀 Usage
 
