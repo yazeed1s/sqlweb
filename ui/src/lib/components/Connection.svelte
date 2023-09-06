@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { fade, slide } from 'svelte/transition';
 	import { connectedStore, schemaName, type Table, tableDataStore } from '../store';
+	import { endpoints, httpClient } from '../../services/api';
 
 	interface DatabaseConfig {
 		host: string;
@@ -13,11 +14,11 @@
 	}
 
 	let form: DatabaseConfig = {
-		host: '',
-		port: 0,
-		user: '',
+		host: 'localhost',
+		port: 3306,
+		user: 'root', 
 		password: '',
-		databaseType: '',
+		databaseType: 'MySQL',
 		database: ''
 	};
 
@@ -224,7 +225,7 @@
 					type="submit"
 					value="Connect"
 					disabled={isFormEmpty}
-					on:click={() => sendRequest()}
+					on:click={sendRequest}
 				/>
 			</div>
 			<div class="button">
@@ -232,7 +233,7 @@
 					type="submit"
 					value="Save connection"
 					disabled={isFormEmpty}
-					on:click={() => sendSaveRequest()}
+					on:click={sendSaveRequest}
 				/>
 			</div>
 		</div>
@@ -242,7 +243,7 @@
 					style="width: 185px; align-self: flex-start; color: rgb(var(--color-surface-100)); background-color: rgb(var(--color-surface-500));"
 					type="submit"
 					value="View saved connections"
-					on:click={() => sendSavedConnectionRequest()}
+					on:click={sendSavedConnectionRequest}
 				/>
 			</div>
 		</div>
