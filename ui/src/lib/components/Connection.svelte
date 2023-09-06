@@ -119,7 +119,6 @@
 			form.host === '' ||
 			form.port === 0 ||
 			form.user === '' ||
-			form.password === '' ||
 			form.databaseType === '' ||
 			form.database === '';
 	}
