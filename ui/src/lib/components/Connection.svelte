@@ -14,11 +14,11 @@
 	}
 
 	let form: DatabaseConfig = {
-		host: 'localhost',
-		port: 3306,
-		user: 'root', 
+		host: '',
+		port: 0,
+		user: '',
 		password: '',
-		databaseType: 'MySQL',
+		databaseType: '',
 		database: ''
 	};
 
