@@ -2,6 +2,7 @@
 	import SqlEditor from './SqlEditor.svelte';
 	import { connectedStore } from '$lib/store';
 	import { slide } from 'svelte/transition';
+	import { endpoints, httpClient } from '../../services/api';
 
 	let connected: boolean = false;
 	let req = { query: 'SELECT * FROM test_table;' };
@@ -18,7 +19,7 @@
 	});
 
 	const sendRequest = async (): Promise<void> => {
-		const res = await fetch('/execute', {
+		const res = await httpClient(endpoints.execute, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(req)
