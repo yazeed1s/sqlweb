@@ -2,14 +2,16 @@ export const endpoints = {
 	connect: '/connect',
 	disconnect: '/disconnect',
 	save: '/save',
-	saveConnection: '/save/connection',
+	savedConnection: '/saved/connections',
 	execute: '/execute',
 	schemas: '/schemas',
-	update: '/update'
+	update: '/update',
+	table: '/table',
+	export: '/export'
 };
 
-export const httpClient = async (url: string, options: RequestInit = {}) => {
+export const httpClient = async (url: string, options: RequestInit = {}): Promise<Response> => {
 	const response = await fetch(url, options);
-	if (!response.ok) throw new Error(response.statusText);
-	return await response.json();
+	// if (!response.ok) throw new Error(response.statusText);
+	return response;
 };
