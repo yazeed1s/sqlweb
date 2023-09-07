@@ -94,8 +94,8 @@
 	const exportRequest = async (choice: string): Promise<void> => {
 		let url =
 			choice === 'sql'
-				? `/${choice}/export`
-				: `/${choice}/export?name=${encodeURIComponent(
+				? `${endpoints.export}/${choice}`
+				: `${endpoints.export}/${choice}?name=${encodeURIComponent(
 						selectTableName.selectedTable
 				  )}`;
 
@@ -133,7 +133,7 @@
 		header = [];
 		rows = [];
 		cols = [];
-		let url = `/table?name=${encodeURIComponent(
+		let url = `${endpoints.table}?name=${encodeURIComponent(
 			selectTableName.selectedTable
 		)}&page=${currentPage}&perPage=${rowsPerPage}`;
 		try {
