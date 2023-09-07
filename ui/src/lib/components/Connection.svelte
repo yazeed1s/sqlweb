@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { fade, slide } from 'svelte/transition';
 	import { connectedStore, schemaName, type Table, tableDataStore } from '../store';
+	import { endpoints, httpClient } from '../../services/api';
 
 	interface DatabaseConfig {
 		host: string;
@@ -34,7 +35,7 @@
 	const sendRequest = async (): Promise<void> => {
 		form.port = parseInt(form.port, 10);
 		form.databaseType = form.databaseType.toLocaleLowerCase();
-		const res = await fetch('/connect', {
+		const res = await httpClient(endpoints.connect, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(form)
@@ -45,7 +46,7 @@
 
 	const sendSaveRequest = async (): Promise<void> => {
 		form.port = parseInt(form.port, 10);
-		const res = await fetch('/save', {
+		const res = await httpClient(endpoints.save, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(form)
@@ -56,7 +57,7 @@
 
 	const sendSavedConnectionRequest = async (): Promise<void> => {
 		form.port = parseInt(form.port, 10);
-		const res = await fetch('/saved/connections', {
+		const res = await httpClient(endpoints.savedConnection, {
 			method: 'GET',
 			headers: { 'Content-Type': 'application/json' }
 		});
@@ -119,7 +120,6 @@
 			form.host === '' ||
 			form.port === 0 ||
 			form.user === '' ||
-			form.password === '' ||
 			form.databaseType === '' ||
 			form.database === '';
 	}
@@ -225,7 +225,7 @@
 					type="submit"
 					value="Connect"
 					disabled={isFormEmpty}
-					on:click={() => sendRequest()}
+					on:click={sendRequest}
 				/>
 			</div>
 			<div class="button">
@@ -233,7 +233,7 @@
 					type="submit"
 					value="Save connection"
 					disabled={isFormEmpty}
-					on:click={() => sendSaveRequest()}
+					on:click={sendSaveRequest}
 				/>
 			</div>
 		</div>
@@ -243,7 +243,7 @@
 					style="width: 185px; align-self: flex-start; color: rgb(var(--color-surface-100)); background-color: rgb(var(--color-surface-500));"
 					type="submit"
 					value="View saved connections"
-					on:click={() => sendSavedConnectionRequest()}
+					on:click={sendSavedConnectionRequest}
 				/>
 			</div>
 		</div>

@@ -7,6 +7,7 @@
 	import { connectedStore } from '$lib/store';
 	import { goto } from '$app/navigation';
 	import { quintOut } from 'svelte/easing';
+	import { endpoints } from '../../services/api';
 
 	let show: boolean = false;
 	let menu: any = null;
@@ -69,11 +70,11 @@
 	};
 
 	const disconnect = async (): Promise<void> => {
-		await fetchAndHandleResponse('/disconnect', 'POST');
+		await fetchAndHandleResponse(endpoints.disconnect, 'POST');
 	};
 
 	const showSchemas = async (): Promise<void> => {
-		const json = await fetchAndHandleResponse('/schemas', 'GET');
+		const json = await fetchAndHandleResponse(endpoints.schemas, 'GET');
 		schemas = json.schemas;
 		console.log(schemas);
 	};

@@ -14,6 +14,7 @@
 	} from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 	import { quintOut } from 'svelte/easing';
+	import { endpoints, httpClient } from '../../services/api';
 
 	const rowsPerPage: number = 300;
 	let tableElement: HTMLTableElement;
@@ -81,7 +82,7 @@
 	});
 
 	const editRowRequest = async (values: RowValues): Promise<void> => {
-		const res = await fetch('/update', {
+		const res = await httpClient(endpoints.update, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(values)
@@ -93,8 +94,8 @@
 	const exportRequest = async (choice: string): Promise<void> => {
 		let url =
 			choice === 'sql'
-				? `/${choice}/export`
-				: `/${choice}/export?name=${encodeURIComponent(
+				? `${endpoints.export}/${choice}`
+				: `${endpoints.export}/${choice}?name=${encodeURIComponent(
 						selectTableName.selectedTable
 				  )}`;
 
@@ -132,7 +133,7 @@
 		header = [];
 		rows = [];
 		cols = [];
-		let url = `/table?name=${encodeURIComponent(
+		let url = `${endpoints.table}?name=${encodeURIComponent(
 			selectTableName.selectedTable
 		)}&page=${currentPage}&perPage=${rowsPerPage}`;
 		try {
