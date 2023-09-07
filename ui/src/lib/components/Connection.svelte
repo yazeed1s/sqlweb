@@ -57,7 +57,7 @@
 
 	const sendSavedConnectionRequest = async (): Promise<void> => {
 		form.port = parseInt(form.port, 10);
-		const res = await httpClient(endpoints.saveConnection, {
+		const res = await httpClient(endpoints.savedConnection, {
 			method: 'GET',
 			headers: { 'Content-Type': 'application/json' }
 		});
