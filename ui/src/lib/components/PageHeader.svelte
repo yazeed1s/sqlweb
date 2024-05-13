@@ -53,7 +53,11 @@
 		goto(`/${route}`);
 	};
 
-	const fetchAndHandleResponse = async (url: string, method: string, body?: any): Promise<any> => {
+	const fetchAndHandleResponse = async (
+		url: string,
+		method: string,
+		body?: any
+	): Promise<any> => {
 		try {
 			const options = {
 				method,
@@ -62,7 +66,7 @@
 			};
 			const res = await fetch(url, options);
 			const json = await res.json();
-			(res.ok) ? handleSuccessResponse('', json) : handleErrorResponse(json);
+			res.ok ? handleSuccessResponse('', json) : handleErrorResponse(json);
 			return json;
 		} catch (error) {
 			console.error('An error occurred:', error);
@@ -102,17 +106,14 @@
 <div class="top-navigation">
 	<div class="dbit-container">
 		<img src={go4} alt="Go" class="small-image" />
-		<strong class="title">DBit</strong>
+		<strong class="title">sqlweb</strong>
 	</div>
 	<div class="top-navigation-icon" bind:this={menu}>
 		<button on:click={() => (show = !show)}>
 			<Fa icon={faCog} />
 		</button>
 		{#if show}
-			<div
-				transition:fly={{ duration: 200, x: 100, easing: quintOut }}
-				class="dropdown"
-			>
+			<div transition:fly={{ duration: 200, x: 100, easing: quintOut }} class="dropdown">
 				<!-- svelte-ignore a11y-invalid-attribute -->
 				<a
 					href="#"

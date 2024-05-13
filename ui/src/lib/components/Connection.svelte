@@ -11,6 +11,7 @@
 		password: string;
 		databaseType: string;
 		database: string;
+		path: string;
 	}
 
 	let form: DatabaseConfig = {
@@ -18,8 +19,9 @@
 		port: 0,
 		user: '',
 		password: '',
-		databaseType: '',
-		database: ''
+		databaseType: 'MySQL',
+		database: '',
+		path: ''
 	};
 
 	let savedConnections: DatabaseConfig[] = [];
@@ -31,6 +33,7 @@
 	let isSuccess: boolean = false;
 	let show: boolean = false;
 	let isFormEmpty: boolean = true;
+	let formControl: number = -1;
 
 	const sendRequest = async (): Promise<void> => {
 		form.port = parseInt(form.port, 10);
@@ -117,11 +120,13 @@
 
 	$: {
 		isFormEmpty =
-			form.host === '' ||
-			form.port === 0 ||
-			form.user === '' ||
-			form.databaseType === '' ||
-			form.database === '';
+			form.databaseType === 'SQLite'
+				? form.path === ''
+				: form.host === '' ||
+				  form.port === 0 ||
+				  form.user === '' ||
+				  form.databaseType === '' ||
+				  form.database === '';
 	}
 </script>
 
@@ -137,75 +142,88 @@
 						<option value="SQLite">SQLite</option>
 					</select>
 				</div>
-				<div class="input-box">
-					<span class="details">Connection mode</span>
-					<select class="select" bind:value={connectionMode}>
-						<option value="h">Host and Port</option>
-						<option value="s">Socket</option>
-					</select>
-				</div>
-				{#if connectionMode === 'h'}
+				{#if form.databaseType === 'SQLite'}
 					<div class="input-box">
-						<span class="details">Host</span>
+						<span class="details">SQLite pathss</span>
 						<input
-							bind:value={form.host}
+							bind:value={form.path}
 							class="input"
-							name="host"
+							name="database"
 							type="text"
-							placeholder="Enter host..."
+							placeholder="Enter sqlite db path..."
+						/>
+					</div>
+				{:else if form.databaseType === 'MySQL' || form.databaseType === 'postgreSQL'}
+					<div class="input-box">
+						<span class="details">Connection mode</span>
+						<select class="select" bind:value={connectionMode}>
+							<option value="h">Host and Port</option>
+							<option value="s">Socket</option>
+						</select>
+					</div>
+					{#if connectionMode === 'h'}
+						<div class="input-box">
+							<span class="details">Host</span>
+							<input
+								bind:value={form.host}
+								class="input"
+								name="host"
+								type="text"
+								placeholder="Enter host..."
+							/>
+						</div>
+						<div class="input-box">
+							<span class="details">Port</span>
+							<input
+								bind:value={form.port}
+								class="input"
+								name="port"
+								type="text"
+								placeholder="Enter port..."
+							/>
+						</div>
+					{:else if connectionMode === 's'}
+						<div class="input-box">
+							<span class="details">Socket path</span>
+							<input
+								class="input"
+								name="socketPath"
+								type="text"
+								placeholder="Enter socket path..."
+							/>
+						</div>
+					{/if}
+					<div class="input-box">
+						<span class="details">User</span>
+						<input
+							bind:value={form.user}
+							class="input"
+							name="name"
+							type="text"
+							placeholder="Enter username..."
 						/>
 					</div>
 					<div class="input-box">
-						<span class="details">Port</span>
+						<span class="details">Password</span>
 						<input
-							bind:value={form.port}
+							bind:value={form.password}
 							class="input"
-							name="port"
-							type="text"
-							placeholder="Enter port..."
+							name="password"
+							type="password"
+							placeholder="Enter password..."
 						/>
 					</div>
-				{:else if connectionMode === 's'}
 					<div class="input-box">
-						<span class="details">Socket path</span>
+						<span class="details">Default database</span>
 						<input
+							bind:value={form.database}
 							class="input"
-							name="socketPath"
+							name="database"
 							type="text"
-							placeholder="Enter socket path..."
+							placeholder="Enter database name..."
 						/>
 					</div>
 				{/if}
-				<div class="input-box">
-					<span class="details">User</span>
-					<input
-						bind:value={form.user}
-						class="input"
-						name="name"
-						type="text"
-						placeholder="Enter username..."
-					/>
-				</div>
-				<div class="input-box">
-					<span class="details">Password</span>
-					<input
-						bind:value={form.password}
-						class="input"
-						name="password"
-						type="password"
-						placeholder="Enter password..."
-					/>
-				</div>
-				<div class="input-box">
-					<span class="details">Default database</span>
-					<input
-						bind:value={form.database}
-						class="input"
-						name="database"
-						type="text"
-						placeholder="Enter database name..."
-					/>
-				</div>
 			</div>
 		</form>
 		{#if isError}
@@ -237,7 +255,7 @@
 				/>
 			</div>
 		</div>
-		<div class="saved-button-container">
+		<!-- <div class="saved-button-container">
 			<div class="button">
 				<input
 					style="width: 185px; align-self: flex-start; color: rgb(var(--color-surface-100)); background-color: rgb(var(--color-surface-500));"
@@ -246,26 +264,23 @@
 					on:click={sendSavedConnectionRequest}
 				/>
 			</div>
-		</div>
+		</div> -->
 	</div>
-	{#if show}
-		<!-- svelte-ignore missing-declaration -->
-		<div class="saved-connections-box" transition:fade={{duration: 200}}>
+	<!-- {#if show}
+		<div class="saved-connections-box" transition:fade={{ duration: 200 }}>
 			{#each savedConnections as conn}
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<div class="single-connection" on:click={() => setConnection(conn)}>
 					<span>{conn.databaseType} / {conn.user} / {conn.database}</span>
 				</div>
 			{/each}
 		</div>
-	{/if}
+	{/if} -->
 </div>
 
 <style>
-	.saved-connections-box {
+	/* .saved-connections-box {
 		margin-top: 4rem;
 		background-color: rgb(var(--color-surface-800));
-		/* width: 30%; */
 		height: 24vw;
 		overflow-y: scroll;
 	}
@@ -287,7 +302,7 @@
 		cursor: pointer;
 		border-color: rgb(var(--color-success-500));
 		background-color: rgb(var(--color-surface-700));
-	}
+	} */
 
 	.error {
 		background-color: rgb(var(--color-surface-600));
