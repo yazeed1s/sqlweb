@@ -88,7 +88,7 @@ $ sqlweb -h
 ## ✅  TODO:
 - [x] Add support for MySQL
 - [x] Add support for PostgreSQL
-- [ ] Add support for SQLite 
+- [x] Add support for SQLite 
 - [ ] Add support for MariaDB
 - [x] Editable cells
 - [x] Table pagination
