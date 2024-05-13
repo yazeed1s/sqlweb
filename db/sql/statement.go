@@ -11,10 +11,87 @@ const (
 	SQLUpdateRow string = `UPDATE %s SET %s = %s WHERE %s = %s`
 
 	/*------------------------
+	 === SQLite Constants ===
+	--------------------------*/
+	SQLiteShowCreateTable string = `
+		SELECT 
+			sql
+		FROM 
+			sqlite_schema 
+		WHERE 
+			name='%s';`
+	SQLiteGetColumnDataType string = `
+		SELECT 
+			typeof('%s') 
+		AS 
+			data_type 
+		FROM '%s' 
+			LIMIT 1;
+	`
+	SQLiteCountTableColumns string = `
+		SELECT 
+			COUNT(*)
+		FROM 
+			pragma_table_info('%s');
+	`
+	SQLiteCountTableRows string = `
+		SELECT 
+			COUNT(*) 
+		AS 
+			row_count 
+		FROM '%s';`
+	SQLiteShowTables string = `
+		SELECT 
+			name
+		FROM 
+			sqlite_master
+		WHERE type='table';
+	`
+	SQLiteDropTable      string = `DROP TABLE %s`
+	SQLiteDropDatabase   string = `DROP DATABASE %s`
+	SQLiteCreateDatabase string = `CREATE DATABASE %s`
+	SQLiteTruncateTable  string = `DELETE FROM %s`
+	SQLiteColumnsInfo    string = `
+		 SELECT
+			c.name AS 'Field',
+			c.type AS 'Type',
+			c.pk AS 'Key',
+			'' AS 'ConstraintName',
+			'' AS 'ReferencedTable',
+			'' AS 'ReferencedColumn'
+    	FROM
+        	pragma_table_info('%s') 
+		AS c;
+	`
+
+	SQLiteSelectAllWithLimit string = `SELECT %s FROM %s LIMIT %d OFFSET %d`
+
+	SQLiteTablesSize string = `
+		SELECT 
+			round(SUM(total_size) * 1.0 / 1024 / 1024, 2) AS "Total Size (MB)"
+		FROM (
+  			SELECT 
+				SUM("pgsize") AS total_size
+  			FROM 
+				dbstat
+  			GROUP BY 
+				name
+		);
+	`
+	SQLiteTableSize string = `
+		SELECT 
+		    name AS "Table",
+			round(SUM("pgsize") * 1.0 / 1024 / 1024, 2) AS "Size (MB)"
+		FROM 
+			dbstat
+		WHERE 
+			name = '%s';
+	`
+	/*------------------------
 	 === MySQL Constants ===
 	--------------------------*/
 	MySQLShowCreateTable   string = `SHOW CREATE TABLE %s.%s`
-	MySQLGetColumnDataType        = `
+	MySQLGetColumnDataType string = `
 		SELECT 
 		    DATA_TYPE
 		FROM 

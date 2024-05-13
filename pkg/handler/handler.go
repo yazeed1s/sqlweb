@@ -352,7 +352,9 @@ func (h *Handler) ConnectHandler() http.HandlerFunc {
 		}
 
 		h.client.Database = db
-		setSchemaName(h.client)
+		if !strings.EqualFold(h.client.Type.String(), _sql.SQLite.String()) {
+			setSchemaName(h.client)
+		}
 
 		tableNames, err = h.client.GetTableNames()
 		if err != nil {
@@ -634,6 +636,11 @@ func (h *Handler) TableDataHandler() http.HandlerFunc {
 		}
 
 		rows, err = h.client.CountTableRows(tableName)
+		if err != nil {
+			msg = fmt.Sprintf("Failed to count table rows: %s", tableName)
+			handleBadRequest(writer, msg, err)
+			return
+		}
 		totalPages = float64(rows) / float64(perPageInt)
 		if totalPages < 1 {
 			totalPages = 1

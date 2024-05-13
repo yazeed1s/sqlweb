@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 	_sql "github.com/yazeed1s/sqlweb/db/sql"
 )
 
@@ -18,6 +19,7 @@ type Connection struct {
 	Password string      `json:"password"`
 	Name     string      `json:"database"`
 	Type     _sql.DbType `json:"databaseType"`
+	Path     string      `json:"path"`
 }
 
 // UnmarshalJSON customizes the JSON unmarshaling for the Connection type.
@@ -97,6 +99,8 @@ func ConnectToDatabase(c *Connection, dbType string) (*sql.DB, error) {
 		db, err = sql.Open("mysql", c.mySqlUrl())
 	case strings.ToLower(_sql.PostgreSQL.String()):
 		db, err = sql.Open("postgres", c.postgresUrl())
+	case strings.ToLower(_sql.SQLite.String()):
+		db, err = sql.Open("sqlite3", c.Path)
 	default:
 		return nil, fmt.Errorf("unsupported database type: %s", dbType)
 	}
@@ -118,7 +122,7 @@ func ConnectToDatabase(c *Connection, dbType string) (*sql.DB, error) {
 
 // testQuery executes a test SQL query on the database to check the connection.
 func testQuery(db *sql.DB) error {
-	_, err := db.Exec("SELECT 1")
+	_, err := db.Exec("SELECT 1;")
 	return err
 }
 

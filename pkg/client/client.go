@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -287,6 +288,13 @@ func (c *Client) CountTableRows(tableName string) (int, error) {
 			return 0, err
 		}
 		return rowCount, nil
+	case strings.ToLower(_sql.SQLite.String()):
+		query = fmt.Sprintf(_sql.SQLiteCountTableRows, tableName)
+		rowCount, err = countTableRowsHelper(query, c.Database)
+		if err != nil {
+			return 0, err
+		}
+		return rowCount, nil
 	}
 	return 0, nil
 }
@@ -355,6 +363,12 @@ func (c *Client) GetTableNames() ([]string, error) {
 
 	case strings.ToLower(_sql.PostgreSQL.String()):
 		query = fmt.Sprintf(_sql.PostgreSQLShowTables, c.Schema.Name)
+		tables, err = getTableNamesHelper(query, c.Database)
+		if err != nil {
+			return nil, err
+		}
+	case strings.ToLower(_sql.SQLite.String()):
+		query = _sql.SQLiteShowTables
 		tables, err = getTableNamesHelper(query, c.Database)
 		if err != nil {
 			return nil, err
@@ -433,6 +447,13 @@ func (c *Client) GetColumns(tableName string) ([]Column, error) {
 			return nil, err
 		}
 		return cols, nil
+	case strings.ToLower(_sql.SQLite.String()):
+		query = fmt.Sprintf(_sql.SQLiteColumnsInfo, tableName)
+		cols, err = getColumnsHelper(query, c.Database)
+		if err != nil {
+			return nil, err
+		}
+		return cols, nil
 	}
 
 	return nil, nil
@@ -463,6 +484,14 @@ func (c *Client) GetColumnsData(tableName string) (ColumnData, error) {
 
 	case strings.ToLower(_sql.PostgreSQL.String()):
 		query = fmt.Sprintf(_sql.PostgreSQLColumnsInfo, c.Schema.Name, tableName)
+		cols, err = getColumnsHelper(query, c.Database)
+		data.Columns = cols
+		if err != nil {
+			return ColumnData{}, err
+		}
+		return data, nil
+	case strings.ToLower(_sql.SQLite.String()):
+		query = fmt.Sprintf(_sql.SQLiteColumnsInfo, tableName)
 		cols, err = getColumnsHelper(query, c.Database)
 		data.Columns = cols
 		if err != nil {
@@ -504,6 +533,8 @@ func buildSelectAll(cols []Column, DbType, schema, table string, perPage, offset
 		query = fmt.Sprintf(_sql.MySQLSelectAllWithLimit, columnList, schema, table, perPage, offset)
 	case strings.ToLower(_sql.PostgreSQL.String()):
 		query = fmt.Sprintf(_sql.PostgreSQLSelectAllWithLimit, columnList, schema, table, perPage, offset)
+	case strings.ToLower(_sql.SQLite.String()):
+		query = fmt.Sprintf(_sql.SQLiteSelectAllWithLimit, columnList, table, perPage, offset)
 	}
 
 	return query
@@ -595,6 +626,7 @@ func (c *Client) GetTable(tableName string, page, perPage int) (*Table, error) {
 		cols      []Column
 		tableData *Table
 		table     *Table
+		size      TableSize
 		err       error
 		offset    int
 		query     string
@@ -612,9 +644,14 @@ func (c *Client) GetTable(tableName string, page, perPage int) (*Table, error) {
 		return nil, err
 	}
 
-	size, err := c.GetTableSize(tableName)
-	if err != nil {
-		return nil, err
+	// sqlite3 driver does not set SQLITE_ENABLE_DBSTAT_VTAB,
+	// dbstat is needed to get table size in sqlite
+	// for now, just skip the size funcion
+	if !strings.EqualFold(c.Type.String(), _sql.SQLite.String()) {
+		size, err = c.GetTableSize(tableName)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	table = &Table{
@@ -693,6 +730,13 @@ func (c *Client) GetTablesSize() ([]TableSize, error) {
 			return nil, err
 		}
 		return tableSizes, nil
+	case strings.ToLower(_sql.SQLite.String()):
+		query = _sql.SQLiteTablesSize
+		tableSizes, err = getTableSizes(query, c.Database)
+		if err != nil {
+			return nil, err
+		}
+		return tableSizes, nil
 	}
 
 	return nil, nil
@@ -724,6 +768,7 @@ func (c *Client) GetTableSize(table string) (TableSize, error) {
 		query string
 	)
 
+	log.Println("get table sizes for ", table)
 	switch strings.ToLower(c.Type.String()) {
 	case strings.ToLower(_sql.MySQL.String()):
 		query = fmt.Sprintf(_sql.MySQLGetTableSize, c.Schema.Name, table)
@@ -738,6 +783,17 @@ func (c *Client) GetTableSize(table string) (TableSize, error) {
 
 	case strings.ToLower(_sql.PostgreSQL.String()):
 		query = fmt.Sprintf(_sql.PostgreSQLTableSize, c.Schema.Name, table)
+		t, err = getTableSize(query, c.Database)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return TableSize{}, fmt.Errorf("table '%s' not found", table)
+			}
+			return TableSize{}, fmt.Errorf("error executing query: %w", err)
+		}
+		return t, nil
+	case strings.ToLower(_sql.SQLite.String()):
+		query = fmt.Sprintf(_sql.SQLiteTableSize, table)
+		log.Println("query size = ", query)
 		t, err = getTableSize(query, c.Database)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
@@ -1164,6 +1220,34 @@ func (c *Client) ShowCreateTableMySQL(tables []string, seperator string) (string
 
 	for _, t := range tables {
 		query = fmt.Sprintf(_sql.MySQLShowCreateTable, c.Schema.Name, t)
+		err = c.Database.QueryRow(query).Scan(&tableName, &sqlStatement)
+		if err != nil {
+			return builder.String(), err
+		}
+
+		builder.WriteString(seperator + "\n")
+		builder.WriteString("===== TABLE: " + tableName + " =====" + "\n")
+		builder.WriteString(sqlStatement + "\n")
+	}
+
+	return builder.String(), nil
+}
+
+func (c *Client) ShowCreateTableSQLite(tables []string, seperator string) (string, error) {
+	if c.Database == nil {
+		return "", fmt.Errorf("database connection is nil")
+	}
+
+	var (
+		err          error
+		tableName    string
+		sqlStatement string
+		builder      strings.Builder
+		query        string
+	)
+
+	for _, t := range tables {
+		query = fmt.Sprintf(_sql.SQLiteShowCreateTable, t)
 		err = c.Database.QueryRow(query).Scan(&tableName, &sqlStatement)
 		if err != nil {
 			return builder.String(), err
